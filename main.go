@@ -1,17 +1,37 @@
 package main
 
 import (
+	"github.com/redis/go-redis/v9"
+	"github.com/tmazitov/auth_service.git/internal/config"
 	"github.com/tmazitov/auth_service.git/internal/handlers"
+	"github.com/tmazitov/auth_service.git/internal/staff"
 	service "github.com/tmazitov/auth_service.git/pkg/service"
 )
 
 func main() {
 
 	var (
-		auth *service.Service
+		auth        *service.Service
+		conf        *config.Config
+		st          *staff.Staff
+		redisClient *redis.Client
+		err         error
 	)
 
-	auth = service.NewService("auth-service", "5000", "auth")
-	auth.SetupHandlers(handlers.ServiceEndpoints())
+	if conf, err = config.NewConfig("config.json"); err != nil {
+		panic(err)
+	}
+
+	redisClient = redis.NewClient(&redis.Options{
+		Addr: "localhost:6379",
+	})
+
+	st = staff.NewStaff()
+	if err = st.SetConductor(redisClient, conf.Conductor); err != nil {
+		panic(err)
+	}
+
+	auth = service.NewService("auth-service", "5001", "auth")
+	auth.SetupHandlers(handlers.ServiceEndpoints(st))
 	auth.Start()
 }
