@@ -8,6 +8,7 @@ import (
 func ServiceEndpoints(st *staff.Staff) []service.Endpoint {
 	return []service.Endpoint{
 		// {Method: "GET", Path: "ping", Handler: PingHandler{}},
-		{Method: "POST", Path: "send-code", Handler: SendCodeHandler{st: st}},
+		{Method: "POST", Path: "verification/code", Handler: &CodeSendHandler{st: st}},
+		{Method: "POST", Path: "verification/code/check", Handler: &CodeCheckHandler{st: st}},
 	}
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 	"github.com/tmazitov/auth_service.git/internal/config"
 	"github.com/tmazitov/auth_service.git/internal/handlers"
@@ -26,12 +27,16 @@ func main() {
 		Addr: "localhost:6379",
 	})
 
-	st = staff.NewStaff()
+	st = staff.NewStaff(conf)
+	st.SetJwt(redisClient, conf.JwtSecret)
 	if err = st.SetConductor(redisClient, conf.Conductor); err != nil {
 		panic(err)
 	}
 
 	auth = service.NewService("auth-service", "5001", "auth")
+	auth.SetupMiddleware([]gin.HandlerFunc{
+		gin.ErrorLogger(),
+	})
 	auth.SetupHandlers(handlers.ServiceEndpoints(st))
 	auth.Start()
 }

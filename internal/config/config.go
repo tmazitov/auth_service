@@ -8,7 +8,10 @@ import (
 )
 
 type Config struct {
-	Conductor *cond.ConductorConfig `json:"conductor"`
+	Conductor  *cond.ConductorConfig `json:"conductor"`
+	JwtSecret  string                `json:"jwt_secret"`
+	JwtAccess  int                   `json:"jwt_access"`  // in minutes
+	JwtRefresh int                   `json:"jwt_refresh"` // in days
 }
 
 func NewConfig(path string) (*Config, error) {

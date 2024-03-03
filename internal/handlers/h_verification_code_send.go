@@ -1,11 +1,13 @@
 package handlers
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/tmazitov/auth_service.git/internal/staff"
 )
 
-type SendCodeHandler struct {
+type CodeSendHandler struct {
 	st    *staff.Staff
 	input struct {
 		Email string `json:"email" binding:"required,email"`
@@ -15,27 +17,23 @@ type SendCodeHandler struct {
 	}
 }
 
-func (h SendCodeHandler) Handle(ctx *gin.Context) {
+func (h *CodeSendHandler) Handle(ctx *gin.Context) {
 
 	var err error
 
 	if err = ctx.ShouldBindJSON(&h.input); err != nil {
-		ctx.JSON(400, gin.H{
-			"error": "invalid request",
-		})
+		staff.ResponseByCode(ctx, http.StatusBadRequest)
 		return
 	}
 
-	if h.output.Token, err = h.st.Conductor.SendCode(h.input.Email); err != nil {
-		ctx.JSON(500, gin.H{
-			"error": "internal error",
-		})
+	if h.output.Token, err = h.st.Conductor.SendCode(ctx, h.input.Email); err != nil {
+		staff.ResponseByError(ctx, err)
 		return
 	}
 
 	ctx.JSON(200, h.output)
 }
 
-func (h SendCodeHandler) Middleware() []gin.HandlerFunc {
+func (h *CodeSendHandler) Middleware() []gin.HandlerFunc {
 	return []gin.HandlerFunc{}
 }

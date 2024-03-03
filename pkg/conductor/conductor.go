@@ -1,10 +1,10 @@
 package cond
 
 import (
-	"strings"
+	"time"
 
 	"github.com/redis/go-redis/v9"
-	"gopkg.in/gomail.v2"
+	"github.com/tmazitov/auth_service.git/pkg/jwt"
 )
 
 type ConductorConfig struct {
@@ -15,18 +15,24 @@ type ConductorConfig struct {
 	MailCodeLength   int    `json:"mailCodeLength"`
 	MailCodeDuration int    `json:"mailCodeDuration"`
 	MailTemplatePath string `json:"mailTemplatePath"  binding:"required"`
+	TokenSecret      string `json:"tokenSecret"  binding:"required"`
 }
 
 type Conductor struct {
-	emailChan    chan gomail.Message
-	errChan      chan error
+	emailChan    chan messageInfo
 	mailTemplate string
+	mailDuration time.Duration
 	redis        *redis.Client
+	jwt          *jwt.JwtStorage
 	config       *ConductorConfig
 }
 
 func validateConfig(config *ConductorConfig) error {
 	if config == nil || config.MailTemplatePath == "" {
+		return ErrInvalidParams
+	}
+
+	if config.TokenSecret == "" {
 		return ErrInvalidParams
 	}
 
@@ -49,6 +55,7 @@ func NewConductor(redis *redis.Client, config *ConductorConfig) (*Conductor, err
 
 	var (
 		conductor *Conductor
+		storage   *jwt.JwtStorage
 		template  string
 		err       error
 	)
@@ -61,12 +68,17 @@ func NewConductor(redis *redis.Client, config *ConductorConfig) (*Conductor, err
 		return nil, err
 	}
 
+	if storage, err = jwt.NewJwtStorage([]byte(config.TokenSecret), redis); err != nil {
+		return nil, err
+	}
+
 	conductor = &Conductor{
-		emailChan:    make(chan gomail.Message),
-		errChan:      make(chan error),
+		emailChan:    make(chan messageInfo),
+		jwt:          storage,
 		mailTemplate: template,
 		redis:        redis,
 		config:       config,
+		mailDuration: time.Duration(config.MailCodeDuration) * time.Minute,
 	}
 
 	conductor.start()
@@ -74,35 +86,11 @@ func NewConductor(redis *redis.Client, config *ConductorConfig) (*Conductor, err
 	return conductor, nil
 }
 
-func (c *Conductor) SendCode(email string) (string, error) {
-	var (
-		code    string
-		text    string
-		message *gomail.Message
-	)
-
-	code = generateCode(c.config.MailCodeLength)
-	text = strings.Replace(c.mailTemplate, "{{.VerificationCode}}", code, 1)
-	message = gomail.NewMessage()
-	message.SetHeader("From", c.config.SenderEmail)
-	message.SetHeader("To", email)
-	message.SetHeader("Subject", c.config.MailTitle)
-	message.SetBody("text/html", text)
-
-	c.emailChan <- *message
-
-	return code, nil
-}
-
 func (c *Conductor) start() {
 
-	var emailChan chan gomail.Message = c.emailChan
+	var emailChan chan messageInfo = c.emailChan
 
 	go func() {
 		c.worker(emailChan)
 	}()
-}
-
-func (c *Conductor) VerifyCode(token string, code string) bool {
-	return false
 }
