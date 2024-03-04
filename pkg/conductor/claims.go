@@ -3,7 +3,8 @@ package cond
 import "github.com/golang-jwt/jwt/v5"
 
 const (
-	prefix string = "cond-verification:"
+	codePrefix  string = "cond-verification:"
+	codeRefresh string = "cond-verification-refresh:"
 )
 
 func newClaims(email string) *jwt.MapClaims {

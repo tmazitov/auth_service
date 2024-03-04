@@ -16,15 +16,17 @@ type ConductorConfig struct {
 	MailCodeDuration int    `json:"mailCodeDuration"`
 	MailTemplatePath string `json:"mailTemplatePath"  binding:"required"`
 	TokenSecret      string `json:"tokenSecret"  binding:"required"`
+	CodeRefreshDelay int    `json:"codeRefreshDelay:"`
 }
 
 type Conductor struct {
-	emailChan    chan messageInfo
-	mailTemplate string
-	mailDuration time.Duration
-	redis        *redis.Client
-	jwt          *jwt.JwtStorage
-	config       *ConductorConfig
+	emailChan       chan messageInfo
+	mailTemplate    string
+	redis           *redis.Client
+	jwt             *jwt.JwtStorage
+	config          *ConductorConfig
+	mailDuration    time.Duration
+	refreshDuration time.Duration
 }
 
 func validateConfig(config *ConductorConfig) error {
@@ -46,6 +48,10 @@ func validateConfig(config *ConductorConfig) error {
 
 	if config.MailTitle == "" {
 		config.MailTitle = "Auth Code"
+	}
+
+	if config.CodeRefreshDelay == 0 {
+		config.CodeRefreshDelay = DefaultCodeRefreshDelay
 	}
 
 	return nil
@@ -73,12 +79,13 @@ func NewConductor(redis *redis.Client, config *ConductorConfig) (*Conductor, err
 	}
 
 	conductor = &Conductor{
-		emailChan:    make(chan messageInfo),
-		jwt:          storage,
-		mailTemplate: template,
-		redis:        redis,
-		config:       config,
-		mailDuration: time.Duration(config.MailCodeDuration) * time.Minute,
+		emailChan:       make(chan messageInfo),
+		jwt:             storage,
+		mailTemplate:    template,
+		redis:           redis,
+		config:          config,
+		mailDuration:    time.Duration(config.MailCodeDuration) * time.Minute,
+		refreshDuration: time.Duration(config.CodeRefreshDelay) * time.Minute,
 	}
 
 	conductor.start()
