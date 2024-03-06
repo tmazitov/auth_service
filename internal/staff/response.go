@@ -11,9 +11,15 @@ func ResponseByData(ctx *gin.Context, code int, data interface{}) {
 }
 
 func ResponseByCode(ctx *gin.Context, code int) {
-	ctx.JSON(code, gin.H{
-		"message": http.StatusText(code),
-	})
+
+	ctx.Status(code)
+	if code >= 400 {
+		ctx.AbortWithStatus(code)
+	} else {
+		ctx.JSON(code, gin.H{
+			"message": http.StatusText(code),
+		})
+	}
 }
 
 func ResponseByError(ctx *gin.Context, err error) {

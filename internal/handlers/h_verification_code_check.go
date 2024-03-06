@@ -6,35 +6,34 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/tmazitov/auth_service.git/internal/staff"
+	"github.com/tmazitov/auth_service.git/pkg/service"
 )
 
+type CodeCheckInput struct {
+	Token string `json:"token" binding:"required"`
+	Code  string `json:"code" binding:"required"`
+}
+
+type CodeCheckOutput staff.TokenPair
+
 type CodeCheckHandler struct {
-	st    *staff.Staff
-	input struct {
-		Token string `json:"token" binding:"required"`
-		Code  string `json:"code" binding:"required"`
-	}
-	output struct {
-		Access  string `json:"access"`
-		Refresh string `json:"refresh"`
-	}
+	service.HandlerCoreBehavior[
+		CodeCheckInput,
+		CodeCheckOutput,
+	]
+	st *staff.Staff
 }
 
 func (h *CodeCheckHandler) Handle(ctx *gin.Context) {
 
 	var err error
 
-	if err = ctx.ShouldBindJSON(&h.input); err != nil {
+	if err = h.st.Conductor.VerifyCode(ctx, h.Input.Token, h.Input.Code); err != nil {
 		staff.ResponseByCode(ctx, http.StatusBadRequest)
 		return
 	}
 
-	if err = h.st.Conductor.VerifyCode(ctx, h.input.Token, h.input.Code); err != nil {
-		staff.ResponseByCode(ctx, http.StatusBadRequest)
-		return
-	}
-
-	if err = h.st.Conductor.RemoveCode(ctx, h.input.Token); err != nil {
+	if err = h.st.Conductor.RemoveCode(ctx, h.Input.Token); err != nil {
 		staff.ResponseByError(ctx, err)
 		return
 	}
@@ -43,8 +42,6 @@ func (h *CodeCheckHandler) Handle(ctx *gin.Context) {
 		staff.ResponseByError(ctx, err)
 		return
 	}
-
-	staff.ResponseByData(ctx, 200, h.output)
 }
 
 func (h *CodeCheckHandler) makeTokenPair(ctx *gin.Context) error {
@@ -55,25 +52,21 @@ func (h *CodeCheckHandler) makeTokenPair(ctx *gin.Context) error {
 	)
 	claims = staff.UserClaims(1)
 
-	if h.output.Access, err = h.st.Jwt.CreateToken(ctx, claims, h.st.AccessDuration); err != nil {
+	if h.Output.Access, err = h.st.Jwt.CreateToken(ctx, claims, h.st.AccessDuration); err != nil {
 		return err
 	}
 
-	if h.output.Refresh, err = h.st.Jwt.CreateToken(ctx, claims, h.st.AccessDuration); err != nil {
+	if h.Output.Refresh, err = h.st.Jwt.CreateToken(ctx, claims, h.st.AccessDuration); err != nil {
 		return err
 	}
 
-	if err = h.st.Jwt.SaveToken(ctx, staff.AccessPrefix, h.output.Access, h.st.AccessDuration); err != nil {
+	if err = h.st.Jwt.SaveToken(ctx, staff.AccessPrefix, h.Output.Access, h.st.AccessDuration); err != nil {
 		return err
 	}
 
-	if err = h.st.Jwt.SaveToken(ctx, staff.RefreshPrefix, h.output.Refresh, h.st.RefreshDuration); err != nil {
+	if err = h.st.Jwt.SaveToken(ctx, staff.RefreshPrefix, h.Output.Refresh, h.st.RefreshDuration); err != nil {
 		return err
 	}
 
 	return nil
-}
-
-func (h *CodeCheckHandler) Middleware() []gin.HandlerFunc {
-	return []gin.HandlerFunc{}
 }

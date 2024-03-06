@@ -1,16 +1,25 @@
 package handlers
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/tmazitov/auth_service.git/pkg/service"
+)
+
+type PingInput struct {
+	Text string `json:"text" binding:"required"`
+}
+
+type PingOutput struct {
+	Message string `json:"message"`
+}
 
 type PingHandler struct {
+	service.HandlerCoreBehavior[
+		PingInput,
+		PingOutput,
+	]
 }
 
-func (h PingHandler) Handle(ctx *gin.Context) {
-	ctx.JSON(200, gin.H{
-		"message": "pong",
-	})
-}
-
-func (h PingHandler) Middleware() []gin.HandlerFunc {
-	return []gin.HandlerFunc{}
+func (h *PingHandler) Handle(ctx *gin.Context) {
+	h.Output.Message = "pong"
 }
