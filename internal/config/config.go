@@ -21,9 +21,9 @@ func (c *StorageConfig) Validate() bool {
 
 type Config struct {
 	Conductor  *cond.ConductorConfig `json:"conductor"`
-	JwtSecret  string                `json:"jwt_secret"`
-	JwtAccess  int                   `json:"jwt_access"`  // in minutes
-	JwtRefresh int                   `json:"jwt_refresh"` // in days
+	JwtSecret  string                `json:"jwtSecret"`
+	JwtAccess  int                   `json:"jwtAccessMinutes"` // in minutes
+	JwtRefresh int                   `json:"jwtRefreshDays"`   // in days
 	DB         *StorageConfig        `json:"db"`
 }
 
