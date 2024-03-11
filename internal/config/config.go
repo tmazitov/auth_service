@@ -2,21 +2,34 @@ package config
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 
 	cond "github.com/tmazitov/auth_service.git/pkg/conductor"
 )
+
+type StorageConfig struct {
+	Addr     string `json:"addr"`
+	User     string `json:"username"`
+	Password string `json:"password"`
+	Database string `json:"database"`
+	URL      string `json:"url"`
+}
+
+func (c *StorageConfig) Validate() bool {
+	return (c.Addr != "" && c.User != "" && c.Password != "" && c.Database != "") || c.URL != ""
+}
 
 type Config struct {
 	Conductor  *cond.ConductorConfig `json:"conductor"`
 	JwtSecret  string                `json:"jwt_secret"`
 	JwtAccess  int                   `json:"jwt_access"`  // in minutes
 	JwtRefresh int                   `json:"jwt_refresh"` // in days
+	DB         *StorageConfig        `json:"db"`
 }
 
 func NewConfig(path string) (*Config, error) {
 	// Open the JSON file
-	file, err := ioutil.ReadFile(path)
+	file, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}

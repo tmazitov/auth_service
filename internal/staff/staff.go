@@ -15,6 +15,7 @@ type Staff struct {
 	Config          *config.Config
 	AccessDuration  time.Duration
 	RefreshDuration time.Duration
+	Storage         IStorage
 }
 
 func NewStaff(config *config.Config) *Staff {
@@ -49,4 +50,8 @@ func (s *Staff) SetConductor(redis *redis.Client, conf *cond.ConductorConfig) er
 		return err
 	}
 	return nil
+}
+
+func (s *Staff) SetStorage(storage IStorage) {
+	s.Storage = storage
 }

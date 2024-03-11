@@ -26,10 +26,22 @@ type CodeCheckHandler struct {
 
 func (h *CodeCheckHandler) Handle(ctx *gin.Context) {
 
-	var err error
+	var (
+		err    error
+		email  string
+		auth   *staff.UserAuth
+		method *staff.UserAuthMethod
+	)
 
-	if err = h.st.Conductor.VerifyCode(ctx, h.Input.Token, h.Input.Code); err != nil {
+	if email, err = h.st.Conductor.VerifyCode(ctx, h.Input.Token, h.Input.Code); err != nil {
 		staff.ResponseByCode(ctx, http.StatusBadRequest)
+		return
+	}
+
+	auth = &staff.UserAuth{Email: email}
+	method = &staff.UserAuthMethod{AuthMethodId: staff.EmailAuthMethod}
+	if err = h.st.Storage.AddUserAuthMethod(ctx, auth, method); err != nil {
+		staff.ResponseByError(ctx, err)
 		return
 	}
 

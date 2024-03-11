@@ -6,17 +6,19 @@ import (
 	"github.com/tmazitov/auth_service.git/internal/config"
 	"github.com/tmazitov/auth_service.git/internal/handlers"
 	"github.com/tmazitov/auth_service.git/internal/staff"
+	"github.com/tmazitov/auth_service.git/internal/storage"
 	service "github.com/tmazitov/auth_service.git/pkg/service"
 )
 
 func main() {
 
 	var (
-		auth        *service.Service
-		conf        *config.Config
-		st          *staff.Staff
-		redisClient *redis.Client
-		err         error
+		auth          *service.Service
+		conf          *config.Config
+		st            *staff.Staff
+		storageClient *storage.Storage
+		redisClient   *redis.Client
+		err           error
 	)
 
 	if conf, err = config.NewConfig("config.json"); err != nil {
@@ -27,7 +29,12 @@ func main() {
 		Addr: "localhost:6379",
 	})
 
+	if storageClient, err = storage.NewStorage(conf.DB); err != nil {
+		panic(err)
+	}
+
 	st = staff.NewStaff(conf)
+	st.SetStorage(storageClient)
 	st.SetJwt(redisClient, conf.JwtSecret)
 	if err = st.SetConductor(redisClient, conf.Conductor); err != nil {
 		panic(err)

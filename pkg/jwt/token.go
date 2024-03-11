@@ -13,7 +13,7 @@ func (s *JwtStorage) CreateToken(ctx context.Context, claims jwt.MapClaims, dura
 	return jwtToken.SignedString(s.config.private)
 }
 
-func (s *JwtStorage) VerifyToken(ctx context.Context, name string, token string) (jwt.Claims, error) {
+func (s *JwtStorage) VerifyToken(ctx context.Context, name string, token string) (jwt.MapClaims, error) {
 
 	if err := s.isExists(ctx, name, token); err != nil {
 		return nil, ErrInvalidToken

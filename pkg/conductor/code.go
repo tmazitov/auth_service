@@ -30,7 +30,7 @@ func (c *Conductor) SendCode(ctx context.Context, email string, ip string) (stri
 		code       string
 		token      string
 		blocker    string
-		claims     jwt.MapClaims = *newClaims(email)
+		claims     jwt.MapClaims = newClaims(email)
 		clientInfo string        = fmt.Sprintf("%s:%s", email, ip)
 	)
 
@@ -45,8 +45,6 @@ func (c *Conductor) SendCode(ctx context.Context, email string, ip string) (stri
 	code = generateCode(c.config.MailCodeLength)
 
 	c.emailChan <- messageInfo{email: email, code: code}
-
-	claims["email"] = email
 
 	if token, err = c.jwt.CreateToken(ctx, claims, c.mailDuration); err != nil {
 		return "", err
@@ -63,28 +61,39 @@ func (c *Conductor) SendCode(ctx context.Context, email string, ip string) (stri
 	return token, nil
 }
 
-func (c *Conductor) VerifyCode(ctx context.Context, token string, code string) error {
+func (c *Conductor) VerifyCode(ctx context.Context, token string, code string) (string, error) {
 
 	var (
 		err       error
 		cmd       *redis.StringCmd
+		email     string
+		claims    jwt.MapClaims
 		savedCode string
 	)
 
-	if _, err = c.jwt.VerifyToken(ctx, codePrefix, token); err != nil {
-		return err
+	if claims, err = c.jwt.VerifyToken(ctx, codePrefix, token); err != nil {
+		return "", err
 	}
 
 	cmd = c.redis.Get(ctx, codePrefix+token)
 	if savedCode, err = cmd.Result(); err != nil {
-		return err
+		return "", err
 	}
 
 	if savedCode != code {
-		return ErrInvalidCode
+		return "", ErrInvalidCode
 	}
 
-	return nil
+	if claims["email"] == nil {
+		return "", ErrInvalidCode
+	}
+
+	email = claims["email"].(string)
+	if email == "" {
+		return "", ErrInvalidCode
+	}
+
+	return email, nil
 }
 
 func (c *Conductor) RemoveCode(ctx context.Context, token string) error {

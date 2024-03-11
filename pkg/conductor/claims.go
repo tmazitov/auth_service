@@ -7,11 +7,11 @@ const (
 	codeRefresh string = "cond-verification-refresh:"
 )
 
-func newClaims(email string) *jwt.MapClaims {
+func newClaims(email string) jwt.MapClaims {
 
 	var claims jwt.MapClaims = jwt.MapClaims{}
 
 	claims["email"] = email
 
-	return &claims
+	return claims
 }
