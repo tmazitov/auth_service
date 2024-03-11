@@ -1,0 +1,1 @@
+goose -dir migrations create new_user_table sql 
