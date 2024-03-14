@@ -3,5 +3,5 @@ package staff
 import "context"
 
 type IStorage interface {
-	AddUserAuthMethod(ctx context.Context, auth *UserAuth, method *UserAuthMethod) error
+	UpdateUserAuthMethod(ctx context.Context, auth *UserAuth, method *UserAuthMethod) (int, error)
 }

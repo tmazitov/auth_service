@@ -6,7 +6,7 @@ import (
 	"github.com/tmazitov/auth_service.git/internal/staff"
 )
 
-func (s *Storage) AddUserAuthMethod(ctx context.Context, auth *staff.UserAuth, method *staff.UserAuthMethod) error {
+func (s *Storage) UpdateUserAuthMethod(ctx context.Context, auth *staff.UserAuth, method *staff.UserAuthMethod) (int, error) {
 
 	var (
 		err error
@@ -15,7 +15,7 @@ func (s *Storage) AddUserAuthMethod(ctx context.Context, auth *staff.UserAuth, m
 	// Start a new transaction
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	// Rollback if function returns with error
 	defer func() {
@@ -31,7 +31,7 @@ func (s *Storage) AddUserAuthMethod(ctx context.Context, auth *staff.UserAuth, m
 		Returning("id").
 		Exec(ctx)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	count, err := tx.NewSelect().
@@ -41,15 +41,12 @@ func (s *Storage) AddUserAuthMethod(ctx context.Context, auth *staff.UserAuth, m
 		Count(ctx)
 
 	if count == 0 {
-		// Set the user_id in the UserAuthMethod struct
 		method.UserId = auth.Id
-
-		// Insert into user_auth_methods table
 		_, err = tx.NewInsert().
 			Model(method).
 			Exec(ctx)
 		if err != nil {
-			return err
+			return 0, err
 		}
 	} else {
 		// Update last_auth_at in user_auth_methods table
@@ -59,10 +56,13 @@ func (s *Storage) AddUserAuthMethod(ctx context.Context, auth *staff.UserAuth, m
 			Where("user_id = ?", auth.Id).
 			Where("auth_method_id = ?", method.AuthMethodId).
 			Exec(ctx)
-		if err != nil {
-			return err
-		}
+	}
+	if err != nil {
+		return 0, err
+	}
+	if err = tx.Commit(); err != nil {
+		return 0, err
 	}
 
-	return tx.Commit()
+	return auth.Id, nil
 }
