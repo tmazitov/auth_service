@@ -7,7 +7,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func (s *JwtStorage) verifyToken(ctx context.Context, token string) (jwt.MapClaims, error) {
+func (s *JwtStorage) verifyToken(token string) (jwt.MapClaims, error) {
 	keyFunc := func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, ErrInvalidToken
@@ -21,9 +21,9 @@ func (s *JwtStorage) verifyToken(ctx context.Context, token string) (jwt.MapClai
 		return nil, ErrInvalidToken
 	}
 
-	var ( 
-		claims jwt.MapClaims	
-		ok bool
+	var (
+		claims jwt.MapClaims
+		ok     bool
 	)
 
 	if claims, ok = jwtToken.Claims.(jwt.MapClaims); !ok {
@@ -33,9 +33,9 @@ func (s *JwtStorage) verifyToken(ctx context.Context, token string) (jwt.MapClai
 	return claims, nil
 }
 
-func (s *JwtStorage) isExists(ctx context.Context, prefix string, token string) error {
+func (s *JwtStorage) IsExists(ctx context.Context, name string, token string) error {
 
-	err := s.redis.Get(ctx, prefix+token).Err()
+	err := s.redis.Get(ctx, name+token).Err()
 	if err == redis.Nil {
 		return ErrTokenIsNotExist
 	}

@@ -15,11 +15,13 @@ func (s *JwtStorage) CreateToken(ctx context.Context, claims jwt.MapClaims, dura
 
 func (s *JwtStorage) VerifyToken(ctx context.Context, name string, token string) (jwt.MapClaims, error) {
 
-	if err := s.isExists(ctx, name, token); err != nil {
+	var err error
+
+	if err = s.IsExists(ctx, name, token); err != nil {
 		return nil, ErrInvalidToken
 	}
 
-	return s.verifyToken(ctx, token)
+	return s.verifyToken(token)
 }
 
 func (s *JwtStorage) RemoveToken(ctx context.Context, name string, token string) error {

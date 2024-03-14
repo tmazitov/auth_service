@@ -5,7 +5,8 @@ import (
 )
 
 type JwtConfig struct {
-	private []byte
+	private              []byte
+	TokenStorageDuration int
 }
 
 type JwtStorage struct {
