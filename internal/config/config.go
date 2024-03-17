@@ -5,6 +5,8 @@ import (
 	"os"
 
 	cond "github.com/tmazitov/auth_service.git/pkg/conductor"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
 )
 
 type StorageConfig struct {
@@ -15,11 +17,20 @@ type StorageConfig struct {
 	URL      string `json:"url"`
 }
 
+type GoogleOathConfig struct {
+	ClientID     string   `json:"clientID"`
+	ClientSecret string   `json:"clientSecret"`
+	RedirectURL  string   `json:"redirectURL"`
+	Scopes       []string `json:"scopes"`
+}
+
 func (c *StorageConfig) Validate() bool {
 	return (c.Addr != "" && c.User != "" && c.Password != "" && c.Database != "") || c.URL != ""
 }
 
 type Config struct {
+	GoogleRaw  *GoogleOathConfig `json:"google"`
+	Google     *oauth2.Config
 	Conductor  *cond.ConductorConfig `json:"conductor"`
 	JwtSecret  string                `json:"jwtSecret"`
 	JwtAccess  int                   `json:"jwtAccessMinutes"` // in minutes
@@ -39,6 +50,14 @@ func NewConfig(path string) (*Config, error) {
 	err = json.Unmarshal(file, &config)
 	if err != nil {
 		return nil, err
+	}
+
+	config.Google = &oauth2.Config{
+		ClientID:     config.GoogleRaw.ClientID,
+		ClientSecret: config.GoogleRaw.ClientSecret,
+		RedirectURL:  config.GoogleRaw.RedirectURL,
+		Scopes:       config.GoogleRaw.Scopes,
+		Endpoint:     google.Endpoint,
 	}
 
 	return &config, nil

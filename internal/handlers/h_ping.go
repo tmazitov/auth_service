@@ -14,8 +14,7 @@ type PingOutput struct {
 }
 
 type PingHandler struct {
-	service.HandlerCoreBehavior[
-		PingInput,
+	service.HandlerMonoWriteBehavior[
 		PingOutput,
 	]
 }

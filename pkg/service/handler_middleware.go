@@ -17,8 +17,14 @@ func (h *HandlerCoreBehavior[I, O]) readInputMiddleware() gin.HandlerFunc {
 }
 
 func (h *HandlerCoreBehavior[I, O]) writeOutputMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.JSON(200, h.Output)
-		c.Next()
+	return func(ctx *gin.Context) {
+		var status int = 200
+		
+		if ctx.Writer.Status() != 0 {
+			status = ctx.Writer.Status()
+		}
+
+		ctx.JSON(status, h.Output)
+		ctx.Next()
 	}
 }

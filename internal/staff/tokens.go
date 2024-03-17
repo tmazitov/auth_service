@@ -1,10 +1,13 @@
 package staff
 
 import (
+	"io"
+	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/oauth2"
 )
 
 func (s *Staff) MakeTokenPair(ctx *gin.Context, claims jwt.MapClaims) (*TokenPair, error) {
@@ -65,4 +68,18 @@ func (s *Staff) RemoveTokenPair(ctx *gin.Context, pair *TokenPair) error {
 		return err
 	}
 	return nil
+}
+
+func (s *Staff) OauthUserData(token *oauth2.Token) ([]byte, error) {
+	resp, err := http.Get("https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + token.AccessToken)
+	if err != nil {
+		return nil, err
+	}
+
+	userData, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return userData, nil
 }
