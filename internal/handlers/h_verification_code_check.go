@@ -23,6 +23,16 @@ type CodeCheckHandler struct {
 	st *staff.Staff
 }
 
+// @Summary Check verification code
+// @Description Check the verification code for a given token
+// @Tags Standard Auth
+// @Accept json
+// @Produce json
+// @Param input body CodeCheckInput true "Input parameters"
+// @Success 200 {object} CodeCheckOutput "Verification code check successful"
+// @Failure 400 {object} staff.ErrorResponse "Bad request"
+// @Failure 500 {object} staff.ErrorResponse "Internal server error"
+// @Router /verification/code/check [post]
 func (h *CodeCheckHandler) Handle(ctx *gin.Context) {
 
 	var (

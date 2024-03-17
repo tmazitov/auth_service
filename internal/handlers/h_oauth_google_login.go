@@ -10,13 +10,25 @@ import (
 	"github.com/tmazitov/auth_service.git/pkg/service"
 )
 
+type OauthGoogleLoginOutput struct {
+	Url string `json:"url"`
+}
+
 type OauthGoogleLoginHandler struct {
-	service.HandlerMonoWriteBehavior[struct {
-		Url string `json:"url"`
-	}]
+	service.HandlerMonoWriteBehavior[
+		OauthGoogleLoginOutput,
+	]
 	st *staff.Staff
 }
 
+
+// @Summary Google OAuth Login
+// @Description Redirects to Google OAuth login page
+// @Tags Google OAuth
+// @Accept json
+// @Produce json
+// @Success 303 {object} OauthGoogleLoginOutput "Redirect to Google Oauth login page"
+// @Router /oauth/google/login [get]
 func (h *OauthGoogleLoginHandler) Handle(ctx *gin.Context) {
 
 	var (

@@ -23,6 +23,18 @@ type OauthGoogleCallbackHandler struct {
 	st *staff.Staff
 }
 
+// @Summary Google OAuth Callback
+// @Description Handles the callback from Google OAuth authentication
+// @Tags Google OAuth
+// @Accept json
+// @Produce json
+// @Param code query string true "Authorization code received from Google"
+// @Param state query string true "State parameter received from Google"
+// @Success 200 {object} staff.TokenPair "Token pair containing access and refresh tokens"
+// @Failure 400 {object} staff.ErrorResponse "Bad request"
+// @Failure 403 {object} staff.ErrorResponse "Forbidden"
+// @Failure 500 {object} staff.ErrorResponse "Internal server error"
+// @Router /oauth/google/callback [get]
 func (h *OauthGoogleCallbackHandler) Handle(ctx *gin.Context) {
 
 	var (

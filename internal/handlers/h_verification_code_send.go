@@ -25,6 +25,18 @@ type CodeSendHandler struct {
 	st *staff.Staff
 }
 
+
+// @Summary Send verification code
+// @Tags Standard Auth
+// @Description Sends a verification code to the specified email address
+// @Accept json
+// @Produce json
+// @Param input body CodeSendInput true "Input parameters"
+// @Success 200 {object} CodeSendOutput "Verification code sent successfully"
+// @Failure 400 {object} staff.ErrorResponse "Invalid request"
+// @Failure 403 {object} staff.ErrorResponse "Code refresh blocked"
+// @Failure 500 {object} staff.ErrorResponse "Internal server error"
+// @Router /verification/code [post]
 func (h *CodeSendHandler) Handle(ctx *gin.Context) {
 
 	var err error

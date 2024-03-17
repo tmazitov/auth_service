@@ -3,6 +3,8 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
+
+	"github.com/tmazitov/auth_service.git/docs"
 	"github.com/tmazitov/auth_service.git/internal/config"
 	"github.com/tmazitov/auth_service.git/internal/handlers"
 	"github.com/tmazitov/auth_service.git/internal/staff"
@@ -41,9 +43,18 @@ func main() {
 	}
 
 	auth = service.NewService("auth-service", "5001", "auth")
+
+	docs.SwaggerInfo.Title = "Auth Service"
+	docs.SwaggerInfo.Description = "This is a simple auth service"
+	docs.SwaggerInfo.Version = "0.2"
+	docs.SwaggerInfo.Host = "localhost:5001"
+	docs.SwaggerInfo.BasePath = "/auth/v0/api"
+
 	auth.SetupMiddleware([]gin.HandlerFunc{
 		gin.ErrorLogger(),
 	})
+
+	auth.SetupDocs(handlers.ServiceDocs())
 	auth.SetupHandlers(handlers.ServiceEndpoints(st))
 	auth.Start()
 }

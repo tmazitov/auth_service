@@ -49,6 +49,27 @@ func (s *Service) SetupHandlers(endpoints []Endpoint) {
 	}
 }
 
+func (s *Service) SetupDocs(endpoints []Endpoint) {
+
+	var (
+		path    string
+		handler Handler
+		process []gin.HandlerFunc
+	)
+
+	for _, e := range endpoints {
+		handler = e.Handler
+		process = []gin.HandlerFunc{}
+		process = append(process, handler.CoreBeforeMiddleware()...)
+		process = append(process, handler.BeforeMiddleware()...)
+		process = append(process, handler.Handle)
+		process = append(process, handler.AfterMiddleware()...)
+		process = append(process, handler.CoreAfterMiddleware()...)
+		path = e.Path
+		s.core.Handle(e.Method, path, process...)
+	}
+}
+
 func (s *Service) Start() {
 	s.core.Run(":" + s.port)
 }

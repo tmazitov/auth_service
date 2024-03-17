@@ -1,0 +1,227 @@
+definitions:
+  handlers.CodeCheckInput:
+    properties:
+      code:
+        type: string
+      token:
+        type: string
+    required:
+    - code
+    - token
+    type: object
+  handlers.CodeCheckOutput:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    type: object
+  handlers.CodeSendInput:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  handlers.CodeSendOutput:
+    properties:
+      token:
+        type: string
+    type: object
+  handlers.OauthGoogleLoginOutput:
+    properties:
+      url:
+        type: string
+    type: object
+  handlers.TokenRefreshInput:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
+  staff.ErrorResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  staff.TokenPair:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /oauth/google/callback:
+    get:
+      consumes:
+      - application/json
+      description: Handles the callback from Google OAuth authentication
+      parameters:
+      - description: Authorization code received from Google
+        in: query
+        name: code
+        required: true
+        type: string
+      - description: State parameter received from Google
+        in: query
+        name: state
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Token pair containing access and refresh tokens
+          schema:
+            $ref: '#/definitions/staff.TokenPair'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/staff.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/staff.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/staff.ErrorResponse'
+      summary: Google OAuth Callback
+      tags:
+      - Google OAuth
+  /oauth/google/login:
+    get:
+      consumes:
+      - application/json
+      description: Redirects to Google OAuth login page
+      produces:
+      - application/json
+      responses:
+        "303":
+          description: Redirect to Google Oauth login page
+          schema:
+            $ref: '#/definitions/handlers.OauthGoogleLoginOutput'
+      summary: Google OAuth Login
+      tags:
+      - Google OAuth
+  /ping:
+    get:
+      consumes:
+      - application/json
+      description: do ping
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: ping example
+      tags:
+      - example
+  /token/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Refreshes the token pair using the provided refresh token
+      parameters:
+      - description: Refresh Token
+        in: body
+        name: refresh_token
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.TokenRefreshInput'
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Token Pair
+          schema:
+            $ref: '#/definitions/staff.TokenPair'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/staff.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/staff.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Refreshes the token pair
+      tags:
+      - Standard Auth
+  /verification/code:
+    post:
+      consumes:
+      - application/json
+      description: Sends a verification code to the specified email address
+      parameters:
+      - description: Input parameters
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CodeSendInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Verification code sent successfully
+          schema:
+            $ref: '#/definitions/handlers.CodeSendOutput'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/staff.ErrorResponse'
+        "403":
+          description: Code refresh blocked
+          schema:
+            $ref: '#/definitions/staff.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/staff.ErrorResponse'
+      summary: Send verification code
+      tags:
+      - Standard Auth
+  /verification/code/check:
+    post:
+      consumes:
+      - application/json
+      description: Check the verification code for a given token
+      parameters:
+      - description: Input parameters
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CodeCheckInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Verification code check successful
+          schema:
+            $ref: '#/definitions/handlers.CodeCheckOutput'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/staff.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/staff.ErrorResponse'
+      summary: Check verification code
+      tags:
+      - Standard Auth
+swagger: "2.0"

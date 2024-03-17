@@ -14,11 +14,20 @@ type PingOutput struct {
 }
 
 type PingHandler struct {
-	service.HandlerMonoWriteBehavior[
-		PingOutput,
-	]
+	service.HandlerMonoWriteBehavior[PingOutput]
 }
 
+// @BasePath /auth/v0/api
+
+// PingExample godoc
+// @Summary ping example
+// @Schemes
+// @Description do ping
+// @Tags example
+// @Accept json
+// @Produce json
+// @Success 200 {string} pong
+// @Router /ping [get]
 func (h *PingHandler) Handle(ctx *gin.Context) {
 	h.Output.Message = "pong"
 }
