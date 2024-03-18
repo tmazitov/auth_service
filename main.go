@@ -1,7 +1,10 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
+	"github.com/penglongli/gin-metrics/ginmetrics"
 	"github.com/redis/go-redis/v9"
 
 	"github.com/tmazitov/auth_service.git/docs"
@@ -11,6 +14,21 @@ import (
 	"github.com/tmazitov/auth_service.git/internal/storage"
 	service "github.com/tmazitov/auth_service.git/pkg/service"
 )
+
+func setupDocs(config *config.Config) {
+	docs.SwaggerInfo.Title = config.Docs.Title
+	docs.SwaggerInfo.Description = config.Docs.Description
+	docs.SwaggerInfo.Version = config.Service.Version
+	docs.SwaggerInfo.BasePath = fmt.Sprintf("/%s/%s/api", config.Service.Prefix, config.Service.Version)
+}
+
+func setupMetrics(service *service.Service) {
+	metrics := ginmetrics.GetMonitor()
+	metrics.SetMetricPath("/metrics")
+	metrics.SetSlowTime(10)
+	metrics.SetDuration([]float64{0.1, 0.3, 1.2, 5, 10})
+	metrics.Use(service.GetCore())
+}
 
 func main() {
 
@@ -37,23 +55,20 @@ func main() {
 
 	st = staff.NewStaff(conf)
 	st.SetStorage(storageClient)
-	st.SetJwt(redisClient, conf.JwtSecret)
+	st.SetJwt(redisClient, conf.Jwt.Secret)
 	if err = st.SetConductor(redisClient, conf.Conductor); err != nil {
 		panic(err)
 	}
 
-	auth = service.NewService("auth-service", "5001", "auth")
+	auth = service.NewService(conf.Service)
 
-	docs.SwaggerInfo.Title = "Auth Service"
-	docs.SwaggerInfo.Description = "This is a simple auth service"
-	docs.SwaggerInfo.Version = "0.2"
-	docs.SwaggerInfo.Host = "localhost:5001"
-	docs.SwaggerInfo.BasePath = "/auth/v0/api"
-
+	setupDocs(conf)
+	setupMetrics(auth)
 	auth.SetupMiddleware([]gin.HandlerFunc{
 		gin.ErrorLogger(),
 	})
 
+	// register the `/metrics` route.
 	auth.SetupDocs(handlers.ServiceDocs())
 	auth.SetupHandlers(handlers.ServiceEndpoints(st))
 	auth.Start()

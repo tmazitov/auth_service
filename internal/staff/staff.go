@@ -21,8 +21,8 @@ type Staff struct {
 func NewStaff(config *config.Config) *Staff {
 
 	var (
-		accessDuration  time.Duration = time.Duration(config.JwtAccess) * time.Minute
-		refreshDuration time.Duration = time.Duration(config.JwtRefresh) * 24 * time.Hour
+		accessDuration  time.Duration = time.Duration(config.Jwt.Access) * time.Minute
+		refreshDuration time.Duration = time.Duration(config.Jwt.Refresh) * 24 * time.Hour
 	)
 
 	return &Staff{

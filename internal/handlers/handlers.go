@@ -18,6 +18,6 @@ func ServiceEndpoints(st *staff.Staff) []service.Endpoint {
 
 func ServiceDocs() []service.Endpoint {
 	return []service.Endpoint{
-		{Method: "GET", Path: "/swagger/*any", Handler: &SwaggerDocsHandler{}},
+		{Method: "GET", Path: "/swagger/*any", Handler: &ServiceDocsHandler{}},
 	}
 }

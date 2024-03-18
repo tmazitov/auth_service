@@ -5,6 +5,7 @@ import (
 	"os"
 
 	cond "github.com/tmazitov/auth_service.git/pkg/conductor"
+	"github.com/tmazitov/auth_service.git/pkg/service"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )
@@ -24,18 +25,29 @@ type GoogleOathConfig struct {
 	Scopes       []string `json:"scopes"`
 }
 
+type DocsConfig struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+}
+
+type JwtConfig struct {
+	Secret  string `json:"secret"`
+	Access  int    `json:"accessMinutes"`
+	Refresh int    `json:"refreshDays"`
+}
+
 func (c *StorageConfig) Validate() bool {
 	return (c.Addr != "" && c.User != "" && c.Password != "" && c.Database != "") || c.URL != ""
 }
 
 type Config struct {
-	GoogleRaw  *GoogleOathConfig `json:"google"`
-	Google     *oauth2.Config
-	Conductor  *cond.ConductorConfig `json:"conductor"`
-	JwtSecret  string                `json:"jwtSecret"`
-	JwtAccess  int                   `json:"jwtAccessMinutes"` // in minutes
-	JwtRefresh int                   `json:"jwtRefreshDays"`   // in days
-	DB         *StorageConfig        `json:"db"`
+	Service   *service.ServiceConfig `json:"service"`
+	Docs      *DocsConfig            `json:"docs"`
+	GoogleRaw *GoogleOathConfig      `json:"google"`
+	Google    *oauth2.Config
+	Conductor *cond.ConductorConfig `json:"conductor"`
+	Jwt       *JwtConfig            `json:"jwt"`
+	DB        *StorageConfig        `json:"db"`
 }
 
 func NewConfig(path string) (*Config, error) {

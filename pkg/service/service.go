@@ -6,18 +6,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type ServiceConfig struct {
+	Name    string `json:"name"`
+	Port    string `json:"port"`
+	Prefix  string `json:"prefix"`
+	Version string `json:"version"`
+}
+
 type Service struct {
-	port   string
-	name   string
-	prefix string
+	config *ServiceConfig
 	core   *gin.Engine
 }
 
-func NewService(name string, port string, prefix string) *Service {
+func NewService(config *ServiceConfig) *Service {
 	return &Service{
-		port:   port,
-		name:   name,
-		prefix: prefix,
+		config: config,
 		core:   gin.Default(),
 	}
 }
@@ -44,7 +47,7 @@ func (s *Service) SetupHandlers(endpoints []Endpoint) {
 		process = append(process, handler.Handle)
 		process = append(process, handler.AfterMiddleware()...)
 		process = append(process, handler.CoreAfterMiddleware()...)
-		path = fmt.Sprintf("/%s/v0/api/%s", s.prefix, e.Path)
+		path = fmt.Sprintf("/%s/v0/api/%s", s.config.Prefix, e.Path)
 		s.core.Handle(e.Method, path, process...)
 	}
 }
@@ -70,6 +73,10 @@ func (s *Service) SetupDocs(endpoints []Endpoint) {
 	}
 }
 
+func (s *Service) GetCore() *gin.Engine {
+	return s.core
+}
+
 func (s *Service) Start() {
-	s.core.Run(":" + s.port)
+	s.core.Run(":" + s.config.Port)
 }

@@ -78,3 +78,15 @@ type HandlerMonoWriteBehavior[O HandlerOutput] struct {
 type HandlerMonoReadBehavior[I HandlerInput] struct {
 	HandlerCoreBehavior[I, struct{}]
 }
+
+type HandlerClearBehavior struct {
+	HandlerCoreBehavior[struct{}, struct{}]
+}
+
+func (h *HandlerClearBehavior) CoreBeforeMiddleware() []gin.HandlerFunc {
+	return []gin.HandlerFunc{}
+}
+
+func (h *HandlerClearBehavior) CoreAfterMiddleware() []gin.HandlerFunc {
+	return []gin.HandlerFunc{}
+}
