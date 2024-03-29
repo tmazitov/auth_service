@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 
 	"github.com/gin-gonic/gin"
@@ -30,23 +31,60 @@ func setupMetrics(service *service.Service) {
 	metrics.Use(service.GetCore())
 }
 
+type ServiceFlags struct {
+	ConfigPath string
+	Storage    config.StorageConfig
+	Redis      config.RedisConfig
+}
+
+func setupFlags() ServiceFlags {
+	var flags ServiceFlags = ServiceFlags{}
+
+	// Main config
+
+	flag.StringVar(&flags.ConfigPath, "config", "./config.json", "Path to the service config.json")
+
+	// DB flags
+
+	flag.StringVar(&flags.Storage.Addr, "db_addr", "localhost:5432", "Address of the database")
+	flag.StringVar(&flags.Storage.Database, "db_name", "auth_db", "Database name")
+	flag.StringVar(&flags.Storage.User, "db_user", "auth_client", "Username to get access to the database")
+	flag.StringVar(&flags.Storage.Password, "db_pass", "auth_client", "Password to get access to the database")
+	flags.Storage.SSL = false
+
+	// Redis flags
+
+	flag.StringVar(&flags.Redis.Addr, "cache_addr", "localhost:6379", "Address for connection to the cache db ")
+	flag.IntVar(&flags.Redis.DB, "cache_db", 0, "Number of the cache db ")
+
+	flag.Parse()
+
+	return flags
+}
+
 func main() {
 
 	var (
 		auth          *service.Service
 		conf          *config.Config
 		st            *staff.Staff
+		flags         ServiceFlags
 		storageClient *storage.Storage
 		redisClient   *redis.Client
 		err           error
 	)
 
-	if conf, err = config.NewConfig("config.json"); err != nil {
+	flags = setupFlags()
+
+	if conf, err = config.NewConfig(flags.ConfigPath, &flags.Storage, &flags.Redis); err != nil {
 		panic(err)
 	}
 
+	fmt.Println(conf.Redis.Addr)
 	redisClient = redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
+		Addr:     conf.Redis.Addr,
+		Password: "",
+		DB:       conf.Redis.DB,
 	})
 
 	if storageClient, err = storage.NewStorage(conf.DB); err != nil {

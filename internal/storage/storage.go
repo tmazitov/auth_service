@@ -33,6 +33,7 @@ func NewStorage(config *config.StorageConfig) (*Storage, error) {
 	} else {
 		storage.db = bun.NewDB(
 			sql.OpenDB(pgdriver.NewConnector(
+				pgdriver.WithInsecure(!storage.config.SSL),
 				pgdriver.WithAddr(storage.config.Addr),
 				pgdriver.WithUser(storage.config.User),
 				pgdriver.WithPassword(storage.config.Password),

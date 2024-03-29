@@ -16,6 +16,7 @@ type StorageConfig struct {
 	Password string `json:"password"`
 	Database string `json:"database"`
 	URL      string `json:"url"`
+	SSL      bool   `json:"ssl"`
 }
 
 type GoogleOathConfig struct {
@@ -23,6 +24,11 @@ type GoogleOathConfig struct {
 	ClientSecret string   `json:"clientSecret"`
 	RedirectURL  string   `json:"redirectURL"`
 	Scopes       []string `json:"scopes"`
+}
+
+type RedisConfig struct {
+	Addr string `json:"addr"`
+	DB   int    `json:"db"`
 }
 
 type DocsConfig struct {
@@ -47,10 +53,11 @@ type Config struct {
 	Google    *oauth2.Config
 	Conductor *cond.ConductorConfig `json:"conductor"`
 	Jwt       *JwtConfig            `json:"jwt"`
-	DB        *StorageConfig        `json:"db"`
+	DB        *StorageConfig
+	Redis     *RedisConfig
 }
 
-func NewConfig(path string) (*Config, error) {
+func NewConfig(path string, storage *StorageConfig, redis *RedisConfig) (*Config, error) {
 	// Open the JSON file
 	file, err := os.ReadFile(path)
 	if err != nil {
@@ -71,6 +78,9 @@ func NewConfig(path string) (*Config, error) {
 		Scopes:       config.GoogleRaw.Scopes,
 		Endpoint:     google.Endpoint,
 	}
+
+	config.DB = storage
+	config.Redis = redis
 
 	return &config, nil
 }
