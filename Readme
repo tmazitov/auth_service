@@ -1,20 +1,23 @@
 # Auth Service
 
-This is a GoLang authentication service built using the Gin framework.
+This is a Golang authentication service built using the Gin framework
 
 ## Features
 
-- User registration and login by email verification code
+- User sign in by email verification code
 - Token-based authentication
 - Google oath included
+- Metric system allowed
+- API documentation (check path in your browser `localhost:5000/swagger/index.html`)
 
 ## Prerequisites
 
 - Go 1.22 or higher
 - Gin framework
 - PostgreSQL database
+- Redis cache v.6.0.16 or higher 
 
-## Getting Started
+## Get started
 
 1. Clone the repository:
 
@@ -22,38 +25,60 @@ This is a GoLang authentication service built using the Gin framework.
 	git clone <repository_url>
 	```
 
-2. Install the required dependencies:
-
-	```shell
-	go mod download
+2. Create the config file with `.json` resolution and set up service parameters:
+	```json
+	{
+		"jwt" : {
+			"secret" : "secret_key",								// Any passphrase 
+			"accessMinutes" : 15,									// How many minutes access token is active
+			"refreshDays" : 60										// How many days refresh token is active
+		},
+		"google": {
+			"clientID": "google_client_id",							// Google Oauth clientID
+			"clientSecret": "google_client_secret",					// Google Oauth clientSecret
+			"redirectURL": "google_oauth_redirect_url",				// After auth redirect to this url
+			"scopes": [
+				"https://www.googleapis.com/auth/userinfo.email",
+				"https://www.googleapis.com/auth/userinfo.profile"
+			]
+		},
+		"conductor" : {
+			"senderEmail": "google_email_sender",					// Your email address from gmail
+			"senderPass": "google_email_password",					// Google email password(not from your account)
+			"senderPort": 587,
+			"mailTitle": "Authorization code from Service!",
+			"mailCodeLength" : 6,
+			"mailCodeDuration" : 15,
+			"mailTemplatePath": "static/verificationCodeMail.html", // Html email message
+			"tokenSecret": "verification_secret_key", 				// Any passphrase
+			"codeRefreshDelay:": 2,
+			"codeEnterAttempts": 10
+		}
+	}
 	```
 
-3. Set up the PostgreSQL database and configure the connection in the `.env` file.
-
-4. Build and run the application:
-
+3. Build the docker-compose images:
 	```shell
-	go run main.go
+	docker-compose build
+	```
+
+4. Run the docker-compose:
+	```shell
+	docker-compose up -d
 	```
 
 ## Configuration
 
 The application can be configured using the following environment variables:
-
-- `DB_HOST`: PostgreSQL database host
-- `DB_PORT`: PostgreSQL database port
-- `DB_NAME`: PostgreSQL database name
-- `DB_USER`: PostgreSQL database username
-- `DB_PASSWORD`: PostgreSQL database password
-- `JWT_SECRET`: Secret key for JWT token generation
-
-## API Endpoints
-
-- `POST /api/register`: Register a new user
-- `POST /api/login`: Authenticate a user and generate a JWT token
-- `GET /api/profile`: Get the user profile
-
-## I believe in you. Love you so much, honey
+- `PORT` : 			service port
+- `CONFIG_PATH` : 	path to config file
+- `DB_NAME` : 		postgres db name
+- `DB_USER` : 		postgres username
+- `DB_PASS` : 		postgres password
+- `DB_ADDR` : 		postgres address
+- `DB_SSL` : 		postgres ssl (not allowed)
+- `CACHE_ADDR` : 	redis cache address
+- `CACHE_DB` : 		redis cache db
 
 ## License
 
