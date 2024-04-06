@@ -47,17 +47,17 @@ func (c *StorageConfig) Validate() bool {
 }
 
 type Config struct {
-	Service   *service.ServiceConfig `json:"service"`
-	Docs      *DocsConfig            `json:"docs"`
-	GoogleRaw *GoogleOathConfig      `json:"google"`
+	Service   *service.ServiceConfig
+	Docs      *DocsConfig
+	GoogleRaw *GoogleOathConfig `json:"google"`
 	Google    *oauth2.Config
 	Conductor *cond.ConductorConfig `json:"conductor"`
 	Jwt       *JwtConfig            `json:"jwt"`
-	DB        *StorageConfig
+	Storage   *StorageConfig
 	Redis     *RedisConfig
 }
 
-func NewConfig(path string, storage *StorageConfig, redis *RedisConfig) (*Config, error) {
+func NewConfig(path string) (*Config, error) {
 	// Open the JSON file
 	file, err := os.ReadFile(path)
 	if err != nil {
@@ -78,9 +78,6 @@ func NewConfig(path string, storage *StorageConfig, redis *RedisConfig) (*Config
 		Scopes:       config.GoogleRaw.Scopes,
 		Endpoint:     google.Endpoint,
 	}
-
-	config.DB = storage
-	config.Redis = redis
 
 	return &config, nil
 }

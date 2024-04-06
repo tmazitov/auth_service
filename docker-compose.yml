@@ -7,7 +7,6 @@ services:
       - "5000:5000"
     environment:
       - CONFIG=./config.json
-      - DB_SSL=false
       - DB_NAME=auth_db
       - DB_USER=auth_client
       - DB_PASS=auth_client

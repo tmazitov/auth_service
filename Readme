@@ -1,0 +1,60 @@
+# Auth Service
+
+This is a GoLang authentication service built using the Gin framework.
+
+## Features
+
+- User registration and login by email verification code
+- Token-based authentication
+- Google oath included
+
+## Prerequisites
+
+- Go 1.22 or higher
+- Gin framework
+- PostgreSQL database
+
+## Getting Started
+
+1. Clone the repository:
+
+	```shell
+	git clone <repository_url>
+	```
+
+2. Install the required dependencies:
+
+	```shell
+	go mod download
+	```
+
+3. Set up the PostgreSQL database and configure the connection in the `.env` file.
+
+4. Build and run the application:
+
+	```shell
+	go run main.go
+	```
+
+## Configuration
+
+The application can be configured using the following environment variables:
+
+- `DB_HOST`: PostgreSQL database host
+- `DB_PORT`: PostgreSQL database port
+- `DB_NAME`: PostgreSQL database name
+- `DB_USER`: PostgreSQL database username
+- `DB_PASSWORD`: PostgreSQL database password
+- `JWT_SECRET`: Secret key for JWT token generation
+
+## API Endpoints
+
+- `POST /api/register`: Register a new user
+- `POST /api/login`: Authenticate a user and generate a JWT token
+- `GET /api/profile`: Get the user profile
+
+## I believe in you. Love you so much, honey
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).

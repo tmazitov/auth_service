@@ -1,4 +1,5 @@
 go build -o auth_service . && ./auth_service \
+	-port $PORT \
 	-config $CONFIG_PATH \
     -db_addr $DB_ADDR \
     -db_name $DB_NAME \

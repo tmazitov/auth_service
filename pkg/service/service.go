@@ -8,7 +8,7 @@ import (
 
 type ServiceConfig struct {
 	Name    string `json:"name"`
-	Port    string `json:"port"`
+	Port    int    `json:"port"`
 	Prefix  string `json:"prefix"`
 	Version string `json:"version"`
 }
@@ -78,5 +78,5 @@ func (s *Service) GetCore() *gin.Engine {
 }
 
 func (s *Service) Start() {
-	s.core.Run(":" + s.config.Port)
+	s.core.Run(fmt.Sprintf(":%d", s.config.Port))
 }
