@@ -17,8 +17,6 @@ type PingHandler struct {
 	service.HandlerMonoWriteBehavior[PingOutput]
 }
 
-// @BasePath /auth/v0/api
-
 // PingExample godoc
 // @Summary ping example
 // @Schemes

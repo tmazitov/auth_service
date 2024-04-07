@@ -47,7 +47,7 @@ func (s *Service) SetupHandlers(endpoints []Endpoint) {
 		process = append(process, handler.Handle)
 		process = append(process, handler.AfterMiddleware()...)
 		process = append(process, handler.CoreAfterMiddleware()...)
-		path = fmt.Sprintf("/%s/v0/api/%s", s.config.Prefix, e.Path)
+		path = fmt.Sprintf("/%s/%s/api/%s", s.config.Prefix, s.config.Version, e.Path)
 		s.core.Handle(e.Method, path, process...)
 	}
 }

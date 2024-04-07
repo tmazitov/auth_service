@@ -3,12 +3,14 @@ package main
 import (
 	"flag"
 
+	"github.com/gin-gonic/gin"
 	"github.com/tmazitov/auth_service.git/internal/config"
 	"github.com/tmazitov/auth_service.git/pkg/service"
 )
 
 type ServiceFlags struct {
 	ConfigPath string
+	Mode       string
 	Core       service.ServiceConfig
 	Docs       config.DocsConfig
 	Storage    config.StorageConfig
@@ -25,14 +27,16 @@ func setupConfig() (*config.Config, error) {
 	// Constant info
 
 	flags.Core.Name = "auth_service"
-	flags.Core.Version = "1.0.0"
+	flags.Core.Version = "v0"
 	flags.Core.Prefix = "auth"
 	flags.Docs.Title = "Auth service"
 	flags.Docs.Description = "Service for user authorization and authentication"
 
 	// Main config
+
 	flag.IntVar(&flags.Core.Port, "port", 5000, "Port for the service")
 	flag.StringVar(&flags.ConfigPath, "config", "./config.json", "Path to the service config.json")
+	flag.StringVar(&flags.Mode, "mode", "debug", "Service mode (release or debug)")
 
 	// DB flags
 
@@ -57,6 +61,10 @@ func setupConfig() (*config.Config, error) {
 	conf.Docs = &flags.Docs
 	conf.Storage = &flags.Storage
 	conf.Redis = &flags.Cache
+
+	if flags.Mode == "release" {
+		gin.SetMode(gin.ReleaseMode)
+	}
 
 	return conf, nil
 }

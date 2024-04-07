@@ -6,4 +6,5 @@ go build -o auth_service . && ./auth_service \
     -db_user $DB_USER \
     -db_pass $DB_PASS \
     -cache_addr $CACHE_ADDR \
-    -cache_db $CACHE_DB
+    -cache_db $CACHE_DB \
+	-mode "release"
