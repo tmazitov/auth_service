@@ -19,32 +19,38 @@ This is a Golang authentication service built using the Gin framework
 
 ## Get started
 
+
 1. Clone the repository:
 
 	```shell
 	git clone <repository_url>
 	```
 
-2. Create the config file with `.json` resolution and set up service parameters:
+2. Prepare special api keys with your credentials:
+	- Google Oauth Client ID
+	- Google Oauth Client Secret
+	- Google Email App Password
+
+3. Create the config file with `.json` resolution and set up service parameters:
 	```json
 	{
 		"jwt" : {
-			"secret" : "secret_key",								// Any passphrase 
-			"accessMinutes" : 15,									// How many minutes access token is active
-			"refreshDays" : 60										// How many days refresh token is active
+			"secret" : "secret_key",	// Any passphrase 
+			"accessMinutes" : 15,		// How many minutes access token is active
+			"refreshDays" : 60			// How many days refresh token is active
 		},
 		"google": {
-			"clientID": "google_client_id",							// Google Oauth clientID
-			"clientSecret": "google_client_secret",					// Google Oauth clientSecret
-			"redirectURL": "google_oauth_redirect_url",				// After auth redirect to this url
+			"clientID": "google_client_id",				// Google Oauth clientID
+			"clientSecret": "google_client_secret",		// Google Oauth clientSecret
+			"redirectURL": "google_oauth_redirect_url",	// After auth redirect to this url
 			"scopes": [
 				"https://www.googleapis.com/auth/userinfo.email",
 				"https://www.googleapis.com/auth/userinfo.profile"
 			]
 		},
 		"conductor" : {
-			"senderEmail": "google_email_sender",					// Your email address from gmail
-			"senderPass": "google_email_password",					// Google email password(not from your account)
+			"senderEmail": "google_email_sender",	// Your email address from gmail
+			"senderPass": "google_email_password",	// Google email password(not from your account)
 			"senderPort": 587,
 			"mailTitle": "Authorization code from Service!",
 			"mailCodeLength" : 6,
@@ -57,12 +63,12 @@ This is a Golang authentication service built using the Gin framework
 	}
 	```
 
-3. Build the docker-compose images:
+4. Build the docker-compose images:
 	```shell
 	docker-compose build
 	```
 
-4. Run the docker-compose:
+5. Run the docker-compose:
 	```shell
 	docker-compose up -d
 	```
