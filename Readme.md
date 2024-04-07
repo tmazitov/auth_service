@@ -35,40 +35,48 @@ This is a Golang authentication service built using the Gin framework
 	```json
 	{
 		"jwt" : {
-			"secret" : "secret_key",	// Any passphrase 
-			"accessMinutes" : 15,		// How many minutes access token is active
-			"refreshDays" : 60			// How many days refresh token is active
+			"secret" : "secret_key",	
+			"accessMinutes" : 15,		
+			"refreshDays" : 60			
 		},
 		"google": {
-			"clientID": "google_client_id",				// Google Oauth clientID
-			"clientSecret": "google_client_secret",		// Google Oauth clientSecret
-			"redirectURL": "google_oauth_redirect_url",	// After auth redirect to this url
+			"clientID": "google_client_id",				
+			"clientSecret": "google_client_secret",		
+			"redirectURL": "google_oauth_redirect_url",	
 			"scopes": [
 				"https://www.googleapis.com/auth/userinfo.email",
 				"https://www.googleapis.com/auth/userinfo.profile"
 			]
 		},
 		"conductor" : {
-			"senderEmail": "google_email_sender",	// Your email address from gmail
-			"senderPass": "google_email_password",	// Google email password(not from your account)
+			"senderEmail": "google_email_sender",	
+			"senderPass": "google_email_password",	
 			"senderPort": 587,
 			"mailTitle": "Authorization code from Service!",
 			"mailCodeLength" : 6,
 			"mailCodeDuration" : 15,
-			"mailTemplatePath": "static/verificationCodeMail.html", // Html email message
-			"tokenSecret": "verification_secret_key", 				// Any passphrase
+			"mailTemplatePath": "static/verificationCodeMail.html", 
+			"tokenSecret": "verification_secret_key", 				
 			"codeRefreshDelay:": 2,
 			"codeEnterAttempts": 10
 		}
 	}
 	```
+   - `accessMinutes` - How many minutes access token is active
+   - `refreshDays` - How many days refresh token is active
+   - `clientID` - Google Oauth client id
+   - `clientSecret` - Google Oauth client secret
+   - `redirectURL` - After auth the page will be redirected by this url
+   - `scopes` - Types of an access for the Google user info
+   - `senderEmail` - Verification code sender email from Gmail
+   - `senderPass` - Verification code sender app password (not from google account)
 
-4. Build the docker-compose images:
+5. Build the docker-compose images:
 	```shell
 	docker-compose build
 	```
 
-5. Run the docker-compose:
+6. Run the docker-compose:
 	```shell
 	docker-compose up -d
 	```
