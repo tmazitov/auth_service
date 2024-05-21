@@ -2,10 +2,13 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/gin-gonic/gin"
 	"github.com/penglongli/gin-metrics/ginmetrics"
 	"github.com/redis/go-redis/v9"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/tmazitov/auth_service.git/docs"
 	"github.com/tmazitov/auth_service.git/internal/config"
@@ -40,7 +43,13 @@ func main() {
 		panic(err)
 	}
 
-	st = staff.NewStaff(conf)
+	userServiceConn, err := grpc.Dial("localhost:50011", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("Failed to dial: %v", err)
+	}
+	defer userServiceConn.Close()
+
+	st = staff.NewStaff(userServiceConn, conf)
 	st.SetStorage(storageClient)
 	st.SetJwt(redisClient, conf.Jwt.Secret)
 	if err = st.SetConductor(redisClient, conf.Conductor); err != nil {

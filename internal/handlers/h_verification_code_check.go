@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	user_service "github.com/tmazitov/auth_service.git/internal/proto/user_service"
 	"github.com/tmazitov/auth_service.git/internal/staff"
 	"github.com/tmazitov/auth_service.git/pkg/service"
 )
@@ -36,12 +37,14 @@ type CodeCheckHandler struct {
 func (h *CodeCheckHandler) Handle(ctx *gin.Context) {
 
 	var (
-		err    error
-		email  string
-		auth   *staff.UserAuth
-		method *staff.UserAuthMethod
-		pair   *staff.TokenPair
-		userId int
+		err        error
+		email      string
+		auth       *staff.UserAuth
+		method     *staff.UserAuthMethod
+		pair       *staff.TokenPair
+		respUserID *user_service.GetUserIDResponse
+		respCreate *user_service.CreateUserResponse
+		userId     int
 	)
 
 	if email, err = h.st.Conductor.VerifyCode(ctx, h.Input.Token, h.Input.Code); err != nil {
@@ -51,7 +54,7 @@ func (h *CodeCheckHandler) Handle(ctx *gin.Context) {
 
 	auth = &staff.UserAuth{Email: email}
 	method = &staff.UserAuthMethod{AuthMethodId: staff.EmailAuthMethod}
-	if userId, err = h.st.Storage.UpdateUserAuthMethod(ctx, auth, method); err != nil {
+	if _, err = h.st.Storage.UpdateUserAuthMethod(ctx, auth, method); err != nil {
 		staff.ResponseByError(ctx, err)
 		return
 	}
@@ -59,6 +62,19 @@ func (h *CodeCheckHandler) Handle(ctx *gin.Context) {
 	if err = h.st.Conductor.RemoveCode(ctx, h.Input.Token); err != nil {
 		staff.ResponseByError(ctx, err)
 		return
+	}
+
+	if respUserID, err = h.st.UserService.GetUserID(ctx, &user_service.GetUserIDRequest{Email: email}); err != nil {
+		staff.ResponseByError(ctx, err)
+		return
+	}
+	userId = int(respUserID.UserId)
+	if userId == 0 {
+		if respCreate, err = h.st.UserService.CreateUser(ctx, &user_service.CreateUserRequest{Email: email}); err != nil {
+			staff.ResponseByError(ctx, err)
+			return
+		}
+		userId = int(respCreate.UserId)
 	}
 
 	if pair, err = h.st.MakeTokenPair(ctx, staff.UserClaims(userId)); err != nil {

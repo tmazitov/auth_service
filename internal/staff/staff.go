@@ -5,8 +5,10 @@ import (
 
 	"github.com/redis/go-redis/v9"
 	"github.com/tmazitov/auth_service.git/internal/config"
+	"github.com/tmazitov/auth_service.git/internal/proto/user_service"
 	cond "github.com/tmazitov/auth_service.git/pkg/conductor"
 	"github.com/tmazitov/auth_service.git/pkg/jwt"
+	"google.golang.org/grpc"
 )
 
 type Staff struct {
@@ -16,19 +18,24 @@ type Staff struct {
 	AccessDuration  time.Duration
 	RefreshDuration time.Duration
 	Storage         IStorage
+	UserService     user_service.UserServiceClient
 }
 
-func NewStaff(config *config.Config) *Staff {
+func NewStaff(userServiceConn *grpc.ClientConn, config *config.Config) *Staff {
 
 	var (
 		accessDuration  time.Duration = time.Duration(config.Jwt.Access) * time.Minute
 		refreshDuration time.Duration = time.Duration(config.Jwt.Refresh) * 24 * time.Hour
+		userService     user_service.UserServiceClient
 	)
+
+	userService = user_service.NewUserServiceClient(userServiceConn)
 
 	return &Staff{
 		Config:          config,
 		Conductor:       nil,
 		Jwt:             nil,
+		UserService:     userService,
 		AccessDuration:  accessDuration,
 		RefreshDuration: refreshDuration,
 	}
