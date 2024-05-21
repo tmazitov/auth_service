@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/tmazitov/auth_service.git/internal/staff"
-	"github.com/tmazitov/auth_service.git/pkg/service"
+	"github.com/tmazitov/service/handler"
 	"golang.org/x/oauth2"
 )
 
@@ -16,7 +16,7 @@ type OauthGoogleCallbackInput struct {
 }
 
 type OauthGoogleCallbackHandler struct {
-	service.HandlerCoreBehavior[
+	handler.CoreBehavior[
 		OauthGoogleCallbackInput,
 		staff.TokenPair,
 	]

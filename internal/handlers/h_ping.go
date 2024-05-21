@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/tmazitov/auth_service.git/pkg/service"
+	"github.com/tmazitov/service/handler"
 )
 
 type PingInput struct {
@@ -14,7 +14,7 @@ type PingOutput struct {
 }
 
 type PingHandler struct {
-	service.HandlerMonoWriteBehavior[PingOutput]
+	handler.WriteBehavior[PingOutput]
 }
 
 // PingExample godoc

@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/tmazitov/auth_service.git/internal/staff"
-	"github.com/tmazitov/auth_service.git/pkg/service"
+	"github.com/tmazitov/service"
 )
 
 func ServiceEndpoints(st *staff.Staff) []service.Endpoint {

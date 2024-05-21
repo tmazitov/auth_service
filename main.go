@@ -15,7 +15,7 @@ import (
 	"github.com/tmazitov/auth_service.git/internal/handlers"
 	"github.com/tmazitov/auth_service.git/internal/staff"
 	"github.com/tmazitov/auth_service.git/internal/storage"
-	service "github.com/tmazitov/auth_service.git/pkg/service"
+	"github.com/tmazitov/service"
 )
 
 func main() {
@@ -65,7 +65,8 @@ func main() {
 	})
 
 	// register the `/metrics` route.
-	auth.SetupDocs(handlers.ServiceDocs())
+	docs := handlers.ServiceDocs()[0]
+	auth.GetCore().Handle(docs.Method, docs.Path, docs.Handler.AfterMiddleware()...)
 	auth.SetupHandlers(handlers.ServiceEndpoints(st))
 	auth.Start()
 }

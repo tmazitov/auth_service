@@ -1,8 +1,6 @@
 module github.com/tmazitov/auth_service.git
 
-go 1.21
-
-toolchain go1.22.1
+go 1.22.1
 
 require (
 	github.com/gin-gonic/gin v1.10.0
@@ -40,6 +38,7 @@ require (
 	github.com/prometheus/common v0.50.0 // indirect
 	github.com/prometheus/procfs v0.13.0 // indirect
 	github.com/sethvargo/go-retry v0.2.4 // indirect
+	github.com/tmazitov/service v0.0.0-20240520105922-71ccee9c2c7b // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/tools v0.19.0 // indirect

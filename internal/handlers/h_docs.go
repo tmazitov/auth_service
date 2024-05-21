@@ -4,14 +4,14 @@ import (
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"github.com/tmazitov/auth_service.git/pkg/service"
+	"github.com/tmazitov/service/handler"
 )
 
 type ServiceDocsHandler struct {
-	service.HandlerClearBehavior
+	handler.DefaultBehavior
 }
 
-func (h *ServiceDocsHandler) Handle(c *gin.Context) {
+func (h *ServiceDocsHandler) Handle(ctx *gin.Context) {
 }
 
 func (h *ServiceDocsHandler) AfterMiddleware() []gin.HandlerFunc {

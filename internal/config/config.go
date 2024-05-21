@@ -5,7 +5,7 @@ import (
 	"os"
 
 	cond "github.com/tmazitov/auth_service.git/pkg/conductor"
-	"github.com/tmazitov/auth_service.git/pkg/service"
+	"github.com/tmazitov/service"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )

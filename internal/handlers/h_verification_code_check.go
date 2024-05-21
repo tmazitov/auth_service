@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	user_service "github.com/tmazitov/auth_service.git/internal/proto/user_service"
 	"github.com/tmazitov/auth_service.git/internal/staff"
-	"github.com/tmazitov/auth_service.git/pkg/service"
+	"github.com/tmazitov/service/handler"
 )
 
 type CodeCheckInput struct {
@@ -17,7 +17,7 @@ type CodeCheckInput struct {
 type CodeCheckOutput staff.TokenPair
 
 type CodeCheckHandler struct {
-	service.HandlerCoreBehavior[
+	handler.CoreBehavior[
 		CodeCheckInput,
 		CodeCheckOutput,
 	]

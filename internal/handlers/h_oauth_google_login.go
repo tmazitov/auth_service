@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/tmazitov/auth_service.git/internal/staff"
-	"github.com/tmazitov/auth_service.git/pkg/service"
+	"github.com/tmazitov/service/handler"
 )
 
 type OauthGoogleLoginOutput struct {
@@ -15,12 +15,9 @@ type OauthGoogleLoginOutput struct {
 }
 
 type OauthGoogleLoginHandler struct {
-	service.HandlerMonoWriteBehavior[
-		OauthGoogleLoginOutput,
-	]
+	handler.WriteBehavior[OauthGoogleLoginOutput]
 	st *staff.Staff
 }
-
 
 // @Summary Google OAuth Login
 // @Description Redirects to Google OAuth login page
@@ -33,7 +30,7 @@ func (h *OauthGoogleLoginHandler) Handle(ctx *gin.Context) {
 
 	var (
 		state string
-		url string
+		url   string
 	)
 
 	state = generateOauthState()

@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/tmazitov/auth_service.git/internal/staff"
 	cond "github.com/tmazitov/auth_service.git/pkg/conductor"
-	"github.com/tmazitov/auth_service.git/pkg/service"
+	"github.com/tmazitov/service/handler"
 )
 
 type CodeSendInput struct {
@@ -18,13 +18,12 @@ type CodeSendOutput struct {
 }
 
 type CodeSendHandler struct {
-	service.HandlerCoreBehavior[
+	handler.CoreBehavior[
 		CodeSendInput,
 		CodeSendOutput,
 	]
 	st *staff.Staff
 }
-
 
 // @Summary Send verification code
 // @Tags Standard Auth

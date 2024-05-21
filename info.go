@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/tmazitov/auth_service.git/internal/config"
-	"github.com/tmazitov/auth_service.git/pkg/service"
+	"github.com/tmazitov/service"
 )
 
 type ServiceFlags struct {
