@@ -13,8 +13,8 @@ const (
 )
 
 type TokenPair struct {
-	Access  string `json:"access_token"`
-	Refresh string `json:"refresh_token"`
+	Access  string `json:"accessToken"`
+	Refresh string `json:"refreshToken"`
 }
 
 type UserAuthMethod struct {

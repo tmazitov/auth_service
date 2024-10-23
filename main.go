@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/penglongli/gin-metrics/ginmetrics"
 	"github.com/redis/go-redis/v9"
@@ -39,6 +41,15 @@ func main() {
 		DB:       conf.Redis.DB,
 	})
 
+	corsConfig := cors.Config{
+		AllowOrigins:     []string{"http://127.0.0.1:5173"}, // Replace with your frontend domain
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length", "Authorization"},
+		AllowCredentials: true, // If you want to allow credentials (cookies, etc.)
+		MaxAge:           12 * time.Hour,
+	}
+
 	if storageClient, err = storage.NewStorage(conf.Storage); err != nil {
 		panic(err)
 	}
@@ -57,7 +68,7 @@ func main() {
 	}
 
 	auth = service.NewService(conf.Service)
-
+	auth.GetCore().Use(cors.New(corsConfig))
 	setupDocs(conf)
 	setupMetrics(auth)
 	auth.SetupMiddleware([]gin.HandlerFunc{

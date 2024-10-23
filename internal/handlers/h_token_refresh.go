@@ -10,7 +10,7 @@ import (
 )
 
 type TokenRefreshInput struct {
-	Refresh string `json:"refresh_token" binding:"required"`
+	Refresh string `json:"refreshToken" binding:"required"`
 }
 
 type TokenRefreshHandler struct {
