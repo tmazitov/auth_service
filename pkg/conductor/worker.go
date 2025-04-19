@@ -1,65 +1,65 @@
 package cond
 
 import (
-	"fmt"
 	"log"
-	"strings"
 
-	"gopkg.in/gomail.v2"
+	"github.com/streadway/amqp"
+	"github.com/tmazitov/auth_service.git/pkg/conductor/messages"
 )
 
-type messageInfo struct {
-	email string
-	code  string
-}
-
-func (c *Conductor) worker(emailChan chan messageInfo) {
+func (c *Conductor) worker(messageChan chan *messages.MessageInfo) {
 
 	var (
-		info    messageInfo
-		message *gomail.Message
-		err     error
+		messageInfo *messages.MessageInfo
+		messageBody []byte
+		err         error
 	)
 
-	defer close(emailChan)
+	conn, err := amqp.Dial(c.config.AMQPConfig.GetDSN())
+	if err != nil {
+		log.Fatalf("Ошибка подключения к RabbitMQ: %s", err)
+		return
+	}
+	defer conn.Close()
 
-	for {
-		select {
-		case info = <-emailChan:
-			message = c.makeMessage(info.email, info.code)
-			if err = c.send(message); err != nil {
-				log.Println(err)
-			}
+	ch, err := conn.Channel()
+	if err != nil {
+		log.Fatalf("Ошибка создания канала: %s", err)
+	}
+	defer ch.Close()
+
+	q, err := ch.QueueDeclare(
+		"emails", // имя очереди
+		true,     // durable
+		false,    // delete when unused
+		false,    // exclusive
+		false,    // no-wait
+		nil,      // arguments
+	)
+	if err != nil {
+		log.Fatalf("Ошибка объявления очереди: %s", err)
+	}
+
+	defer close(messageChan)
+
+	for messageInfo = range messageChan {
+		if messageBody, err = messageInfo.ToJson(); err != nil {
+			log.Fatalf("Ошибка сериализации сообщения: %s", err)
+		}
+		if err = c.send(ch, q.Name, messageBody); err != nil {
+			log.Fatalf("Ошибка отпр	авки сообщения: %s", err)
 		}
 	}
 }
 
-func (c *Conductor) send(message *gomail.Message) error {
-
-	var (
-		conn *gomail.Dialer
-	)
-
-	// Make connection to the SMTP server
-	conn = gomail.NewDialer("smtp.gmail.com", c.config.SenderPort, c.config.SenderEmail, c.config.SenderPass)
-
-	// Send the mail
-	return conn.DialAndSend(message)
-}
-
-func (c *Conductor) makeMessage(email string, verificationCode string) *gomail.Message {
-
-	var (
-		text    string = c.mailTemplate
-		message *gomail.Message
-	)
-
-	text = strings.Replace(text, "{{.VerificationCode}}", verificationCode, 1)
-	text = strings.Replace(text, "{{.VerificationDuration}}", fmt.Sprintf("%d", c.config.MailCodeDuration), 1)
-	message = gomail.NewMessage()
-	message.SetHeader("From", c.config.SenderEmail)
-	message.SetHeader("To", email)
-	message.SetHeader("Subject", c.config.MailTitle)
-	message.SetBody("text/html", text)
-	return message
+func (c *Conductor) send(ch *amqp.Channel, queueName string, messageBody []byte) error {
+	return ch.Publish(
+		"",        // exchange
+		queueName, // routing key (имя очереди)
+		false,     // mandatory
+		false,     // immediate
+		amqp.Publishing{
+			ContentType: "application/json",
+			Body:        messageBody,
+		})
 }

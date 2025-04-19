@@ -8,13 +8,14 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/redis/go-redis/v9"
+	"github.com/tmazitov/auth_service.git/pkg/conductor/messages"
 )
 
 func generateCode(length int) string {
-	rand.Seed(time.Now().UnixNano())
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	code := ""
 	for i := 0; i < length; i++ {
-		code += fmt.Sprintf("%d", rand.Intn(10))
+		code += fmt.Sprintf("%d", r.Intn(10))
 	}
 	return code
 }
@@ -30,6 +31,7 @@ func (c *Conductor) SendCode(ctx context.Context, email string, ip string) (stri
 		code       string
 		token      string
 		blocker    string
+		messageInfo *messages.MessageInfo
 		claims     jwt.MapClaims = newClaims(email)
 		clientInfo string        = fmt.Sprintf("%s:%s", email, ip)
 	)
@@ -43,8 +45,10 @@ func (c *Conductor) SendCode(ctx context.Context, email string, ip string) (stri
 	}
 
 	code = generateCode(c.config.MailCodeLength)
-
-	c.emailChan <- messageInfo{email: email, code: code}
+	messageInfo = messages.NewCodeMessageInfo(code, email)
+	messageInfo.FieldValues["duration"] = fmt.Sprintf("%d", int(c.mailDuration.Minutes()))
+	
+	c.emailChan <- messageInfo
 
 	if token, err = c.jwt.CreateToken(ctx, claims, c.mailDuration); err != nil {
 		return "", err

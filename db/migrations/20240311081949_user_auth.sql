@@ -31,9 +31,6 @@ CREATE TABLE IF NOT EXISTS user_auth_methods (
 	UNIQUE (user_id, auth_method_id)
 );
 
-INSERT INTO user_auths (email, first_name, last_name) VALUES
-	('timurmazitov000@gmail.com', 'Timur', 'Mazitov');
-
 -- +goose StatementEnd
 -- +goose Down
 -- +goose StatementBegin
