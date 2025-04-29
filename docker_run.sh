@@ -7,4 +7,9 @@ go build -o auth_service . && ./auth_service \
     -db_pass $DB_PASS \
     -cache_addr $CACHE_ADDR \
     -cache_db $CACHE_DB \
+    -jwt_secret $JWT_SECRET \
+    -amqp_host $AMQP_HOST \
+    -amqp_port $AMQP_PORT \
+    -amqp_user $AMQP_USER \
+    -amqp_pass $AMQP_PASS \
 	-mode "release"

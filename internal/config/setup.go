@@ -1,10 +1,12 @@
-package main
+package config
 
 import (
 	"flag"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/tmazitov/auth_service.git/internal/config"
+	cond "github.com/tmazitov/auth_service.git/pkg/conductor"
 	"github.com/tmazitov/service"
 )
 
@@ -12,15 +14,17 @@ type ServiceFlags struct {
 	ConfigPath string
 	Mode       string
 	Core       service.ServiceConfig
-	Docs       config.DocsConfig
-	Storage    config.StorageConfig
-	Cache      config.RedisConfig
+	Docs       DocsConfig
+	Storage    StorageConfig
+	Cache      RedisConfig
+	AMQP       cond.AMQPConfig
+	JwtSecret  string
 }
 
-func setupConfig() (*config.Config, error) {
+func Setup() (*Config, error) {
 	var (
 		flags ServiceFlags = ServiceFlags{}
-		conf  *config.Config
+		conf  *Config
 		err   error
 	)
 
@@ -35,7 +39,7 @@ func setupConfig() (*config.Config, error) {
 	// Main config
 
 	flag.IntVar(&flags.Core.Port, "port", 5000, "Port for the service")
-	flag.StringVar(&flags.ConfigPath, "config", "./config.json", "Path to the service config.json")
+	flag.StringVar(&flags.ConfigPath, "config", "./json", "Path to the service json")
 	flag.StringVar(&flags.Mode, "mode", "debug", "Service mode (release or debug)")
 
 	// DB flags
@@ -51,19 +55,39 @@ func setupConfig() (*config.Config, error) {
 	flag.StringVar(&flags.Cache.Addr, "cache_addr", "localhost:6379", "Address for connection to the cache db ")
 	flag.IntVar(&flags.Cache.DB, "cache_db", 0, "Number of the cache db ")
 
+	// AMQP flags
+	flag.StringVar(&flags.AMQP.Host, "amqp_host", "localhost", "AMQP host address")
+	flag.IntVar(&flags.AMQP.Port, "amqp_port", 5672, "AMQP port")
+	flag.StringVar(&flags.AMQP.User, "amqp_user", "guest", "AMQP username")
+	flag.StringVar(&flags.AMQP.Pass, "amqp_pass", "guest", "AMQP password")
+
+	// JWT flags
+	flag.StringVar(&flags.JwtSecret, "jwt_secret", "supersecret", "JWT secret")
+
 	flag.Parse()
 
-	if conf, err = config.NewConfig(flags.ConfigPath); err != nil {
+	if conf, err = NewConfig(flags.ConfigPath); err != nil {
 		return nil, err
 	}
 
+	conf.Jwt.Secret = flags.JwtSecret
 	conf.Service = &flags.Core
 	conf.Docs = &flags.Docs
 	conf.Storage = &flags.Storage
 	conf.Redis = &flags.Cache
+	conf.Conductor.AMQPConfig = flags.AMQP
 
 	if flags.Mode == "release" {
 		gin.SetMode(gin.ReleaseMode)
+	}
+
+	conf.CORS = cors.Config{
+		AllowOrigins:     []string{"http://127.0.0.1:5173"}, // Replace with your frontend domain
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length", "Authorization"},
+		AllowCredentials: true, // If you want to allow credentials (cookies, etc.)
+		MaxAge:           12 * time.Hour,
 	}
 
 	return conf, nil

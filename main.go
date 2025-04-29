@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -31,8 +30,8 @@ func main() {
 		err           error
 	)
 
-	if conf, err = setupConfig(); err != nil {
-		panic(err)
+	if conf, err = config.Setup(); err != nil {
+		log.Fatalf("Failed to setup config: %v", err)
 	}
 
 	redisClient = redis.NewClient(&redis.Options{
@@ -41,20 +40,12 @@ func main() {
 		DB:       conf.Redis.DB,
 	})
 
-	corsConfig := cors.Config{
-		AllowOrigins:     []string{"http://127.0.0.1:5173"}, // Replace with your frontend domain
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length", "Authorization"},
-		AllowCredentials: true, // If you want to allow credentials (cookies, etc.)
-		MaxAge:           12 * time.Hour,
-	}
-
 	if storageClient, err = storage.NewStorage(conf.Storage); err != nil {
-		panic(err)
+		log.Fatalf("Failed to setup storage: %v", err)
 	}
+	defer storageClient.Close()
 
-	userServiceConn, err := grpc.Dial("localhost:50011", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	userServiceConn, err := grpc.Dial(conf.GRPC.UserServiceAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Failed to dial: %v", err)
 	}
@@ -64,13 +55,13 @@ func main() {
 	st.SetStorage(storageClient)
 	st.SetJwt(redisClient, conf.Jwt.Secret)
 	if err = st.SetConductor(redisClient, conf.Conductor); err != nil {
-		panic(err)
+		log.Fatalf("Failed to setup conductor: %v", err)
 	}
 
 	auth = service.NewService(conf.Service)
-	auth.GetCore().Use(cors.New(corsConfig))
 	setupDocs(conf)
 	setupMetrics(auth)
+	auth.GetCore().Use(cors.New(conf.CORS))
 	auth.SetupMiddleware([]gin.HandlerFunc{
 		gin.ErrorLogger(),
 	})

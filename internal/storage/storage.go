@@ -2,7 +2,10 @@ package storage
 
 import (
 	"database/sql"
+	"fmt"
+	"log"
 
+	"github.com/pressly/goose"
 	"github.com/tmazitov/auth_service.git/internal/config"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
@@ -31,6 +34,7 @@ func NewStorage(config *config.StorageConfig) (*Storage, error) {
 		)
 
 	} else {
+		fmt.Printf("config %+v\n", storage.config)
 		storage.db = bun.NewDB(
 			sql.OpenDB(pgdriver.NewConnector(
 				pgdriver.WithInsecure(!storage.config.SSL),
@@ -43,5 +47,28 @@ func NewStorage(config *config.StorageConfig) (*Storage, error) {
 		)
 	}
 
+	if err := storage.SyncMigrations("db/migrations"); err != nil {
+		return nil, err
+	}
+
 	return storage, nil
+}
+
+func (s *Storage) SyncMigrations(migrationsDir string) error {
+	var err error
+
+	goose.SetLogger(log.Default())
+
+	if err = goose.SetDialect("postgres"); err != nil {
+		return err
+	}
+
+	if err = goose.Up(s.db.DB, migrationsDir); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Storage) Close() error {
+	return s.db.Close()
 }

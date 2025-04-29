@@ -2,14 +2,24 @@
 FROM golang:latest
 
 ENV PORT=5000
+
 ENV CONFIG_PATH=./config.json
+
 ENV DB_NAME=auth_db
 ENV DB_USER=auth_client
 ENV DB_PASS=auth_client
 ENV DB_ADDR=localhost:5432
 ENV DB_SSL=false
+
 ENV CACHE_ADDR=localhost:6379
 ENV CACHE_DB=1
+
+ENV AMQP_HOST=localhost
+ENV AMQP_PORT=5672
+ENV AMQP_USER=guest
+ENV AMQP_PASS=guest
+
+ENV JWT_SECRET=secret
 
 # Set the Current Working Directory inside the container
 WORKDIR /app
