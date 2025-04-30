@@ -43,7 +43,7 @@ func (s *Storage) UpdateUserAuthMethod(ctx context.Context, auth *staff.UserAuth
 
 	if count == 0 {
 		method.UserId = auth.Id
-		method.LastAuthAt = time.Now()
+		*method.LastAuthAt = time.Now()
 		_, err = tx.NewInsert().
 			Model(method).
 			Exec(ctx)

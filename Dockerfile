@@ -1,6 +1,8 @@
 # Use the official Golang image as a base
 FROM golang:latest
 
+RUN apt-get update && apt-get install -y netcat-openbsd
+
 ENV PORT=5000
 
 ENV CONFIG_PATH=./config.json
@@ -36,8 +38,10 @@ COPY ./db/migrations /app/db/migrations
 # Copy the source code from the current directory to the Working Directory inside the container
 COPY . .
 COPY ./docker_run.sh /app/docker_run.sh
+COPY ./wait_for.sh /app/wait_for.sh
 
 RUN chmod +x /app/docker_run.sh
+RUN chmod +x /app/wait_for.sh
 
 # Expose port 5000 to the outside world
 EXPOSE ${PORT}

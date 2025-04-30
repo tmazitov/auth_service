@@ -1,3 +1,5 @@
+./wait_for.sh rabbit 5672
+
 go build -o auth_service . && ./auth_service \
 	-port $PORT \
 	-config $CONFIG_PATH \
