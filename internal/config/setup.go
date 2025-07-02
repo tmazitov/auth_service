@@ -11,14 +11,15 @@ import (
 )
 
 type ServiceFlags struct {
-	ConfigPath string
-	Mode       string
-	Core       service.ServiceConfig
-	Docs       DocsConfig
-	Storage    StorageConfig
-	Cache      RedisConfig
-	AMQP       cond.AMQPConfig
-	JwtSecret  string
+	ConfigPath          string
+	Mode                string
+	Core                service.ServiceConfig
+	Docs                DocsConfig
+	Storage             StorageConfig
+	Cache               RedisConfig
+	AMQP                cond.AMQPConfig
+	GRPCUserServiceAddr string
+	JwtSecret           string
 }
 
 func Setup() (*Config, error) {
@@ -41,6 +42,7 @@ func Setup() (*Config, error) {
 	flag.IntVar(&flags.Core.Port, "port", 5000, "Port for the service")
 	flag.StringVar(&flags.ConfigPath, "config", "./json", "Path to the service json")
 	flag.StringVar(&flags.Mode, "mode", "debug", "Service mode (release or debug)")
+	flag.StringVar(&flags.GRPCUserServiceAddr, "grpc_user_service", "localhost:50021", "GRPC listener address for the user service")
 
 	// DB flags
 
@@ -76,13 +78,16 @@ func Setup() (*Config, error) {
 	conf.Storage = &flags.Storage
 	conf.Redis = &flags.Cache
 	conf.Conductor.AMQPConfig = flags.AMQP
+	conf.GRPC = &GRPCConfig{
+		UserServiceAddress: flags.GRPCUserServiceAddr,
+	}
 
 	if flags.Mode == "release" {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
 	conf.CORS = cors.Config{
-		AllowOrigins:     []string{"http://127.0.0.1:5173"}, // Replace with your frontend domain
+		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length", "Authorization"},

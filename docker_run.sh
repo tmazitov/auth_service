@@ -1,10 +1,10 @@
-./wait_for.sh rabbit 5672
+./wait_for.sh "$AMQP_HOST" "$AMQP_PORT"
 
 IFS=':' read -r GRPC_USER_SERVICE_ADDR GRPC_USER_SERVICE_PORT <<< "$GRPC_USER_SERVICE"
 
 ./wait_for.sh "$GRPC_USER_SERVICE_ADDR" "$GRPC_USER_SERVICE_PORT"
 
-go build -o auth_service . && ./auth_service \
+go build -o auth_service . && exec ./auth_service \
 	-port $PORT \
 	-config $CONFIG_PATH \
     -db_addr $DB_ADDR \

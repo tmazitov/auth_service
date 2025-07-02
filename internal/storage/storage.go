@@ -2,7 +2,6 @@ package storage
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 
 	"github.com/pressly/goose"
@@ -34,7 +33,6 @@ func NewStorage(config *config.StorageConfig) (*Storage, error) {
 		)
 
 	} else {
-		fmt.Printf("config %+v\n", storage.config)
 		storage.db = bun.NewDB(
 			sql.OpenDB(pgdriver.NewConnector(
 				pgdriver.WithInsecure(!storage.config.SSL),
