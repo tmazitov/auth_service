@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"time"
 
 	"github.com/tmazitov/auth_service.git/internal/staff"
 )
@@ -43,7 +42,6 @@ func (s *Storage) UpdateUserAuthMethod(ctx context.Context, auth *staff.UserAuth
 
 	if count == 0 {
 		method.UserId = auth.Id
-		*method.LastAuthAt = time.Now()
 		_, err = tx.NewInsert().
 			Model(method).
 			Exec(ctx)

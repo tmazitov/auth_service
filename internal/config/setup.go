@@ -20,6 +20,7 @@ type ServiceFlags struct {
 	AMQP                cond.AMQPConfig
 	GRPCUserServiceAddr string
 	JwtSecret           string
+	Frontend            string
 }
 
 func Setup() (*Config, error) {
@@ -42,6 +43,7 @@ func Setup() (*Config, error) {
 	flag.IntVar(&flags.Core.Port, "port", 5000, "Port for the service")
 	flag.StringVar(&flags.ConfigPath, "config", "./json", "Path to the service json")
 	flag.StringVar(&flags.Mode, "mode", "debug", "Service mode (release or debug)")
+	flag.StringVar(&flags.Frontend, "frontend", "http://localhost:5173", "Path to the frontend.")
 	flag.StringVar(&flags.GRPCUserServiceAddr, "grpc_user_service", "localhost:50021", "GRPC listener address for the user service")
 
 	// DB flags
@@ -87,7 +89,7 @@ func Setup() (*Config, error) {
 	}
 
 	conf.CORS = cors.Config{
-		AllowOrigins:     []string{"*"},
+		AllowOrigins:     []string{flags.Frontend},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length", "Authorization"},

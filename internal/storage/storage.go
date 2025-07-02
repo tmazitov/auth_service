@@ -2,6 +2,7 @@ package storage
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
 	"github.com/pressly/goose"
@@ -21,6 +22,8 @@ func NewStorage(config *config.StorageConfig) (*Storage, error) {
 	var storage *Storage = &Storage{
 		config: config,
 	}
+
+	fmt.Printf("storage : %+v\n", config)
 
 	if !config.Validate() {
 		return nil, ErrInvalidConfig

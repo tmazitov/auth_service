@@ -19,4 +19,5 @@ go build -o auth_service . && exec ./auth_service \
     -amqp_user $AMQP_USER \
     -amqp_pass $AMQP_PASS \
     -grpc_user_service $GRPC_USER_SERVICE \
+    -frontend $FRONTEND
 	-mode "release"

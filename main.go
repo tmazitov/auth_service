@@ -39,6 +39,7 @@ func main() {
 		Password: "",
 		DB:       conf.Redis.DB,
 	})
+	defer redisClient.Close()
 
 	if storageClient, err = storage.NewStorage(conf.Storage); err != nil {
 		log.Fatalf("Failed to setup storage: %v", err)
@@ -59,9 +60,9 @@ func main() {
 	}
 
 	auth = service.NewService(conf.Service)
+	auth.GetCore().Use(cors.New(conf.CORS))
 	setupDocs(conf)
 	setupMetrics(auth)
-	auth.GetCore().Use(cors.New(conf.CORS))
 	auth.SetupMiddleware([]gin.HandlerFunc{
 		gin.ErrorLogger(),
 	})

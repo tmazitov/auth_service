@@ -21,7 +21,7 @@ ENV AMQP_HOST=localhost
 ENV AMQP_PORT=5672
 ENV AMQP_USER=guest
 ENV AMQP_PASS=guest
-
+ENV FRONTEND=http://localhost:5173
 ENV JWT_SECRET=secret
 
 # Set the Current Working Directory inside the container
